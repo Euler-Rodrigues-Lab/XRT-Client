@@ -1,0 +1,103 @@
+using UnityEngine;
+using UnityEngine.UI;
+
+/// <summary>
+/// Drives the CloverUI settings panel:
+///   - Settings button toggles panel visibility
+///   - Haptics toggle enables/disables vibrotactile (bHaptics) output
+///   - Audio Haptics toggle switches audio (piano-note) haptics
+///   - Avatar toggle shows/hides the player avatar (ghost outline) during teleop
+/// Both haptics toggles drive the same gates the remote study manager toggles (UnityCommandReceiver).
+/// </summary>
+public class SettingsController : MonoBehaviour
+{
+    [Header("References")]
+    public WebRTCHapticReceiver hapticReceiver;
+    public GameObject           settingsPanel;
+    public TeleopVisualsController teleopVisuals;
+    public ZEDFOVFiller         zedFovFiller;
+
+    [Header("Toggles")]
+    public Toggle hapticsToggle;
+    public Toggle audioHapticsToggle;
+    public Toggle avatarVisualsToggle;
+    public Toggle videoFillToggle;
+
+    void Start()
+    {
+        if (settingsPanel != null) settingsPanel.SetActive(false);
+
+        if (hapticReceiver != null)
+        {
+            if (hapticsToggle      != null) hapticsToggle.isOn      = hapticReceiver.vibrotactileEnabled;
+            if (audioHapticsToggle != null) audioHapticsToggle.isOn = hapticReceiver.useAudioHaptics;
+        }
+        if (avatarVisualsToggle != null && teleopVisuals != null)
+            avatarVisualsToggle.isOn = teleopVisuals.showAvatarDuringTeleop;
+        if (videoFillToggle != null && zedFovFiller != null)
+            videoFillToggle.isOn = zedFovFiller.IsBlackBorder;
+
+        if (hapticsToggle       != null) hapticsToggle.onValueChanged.AddListener(SetHapticsEnabled);
+        if (audioHapticsToggle  != null) audioHapticsToggle.onValueChanged.AddListener(SetAudioHapticsEnabled);
+        if (avatarVisualsToggle != null) avatarVisualsToggle.onValueChanged.AddListener(SetAvatarVisualsEnabled);
+        if (videoFillToggle     != null) videoFillToggle.onValueChanged.AddListener(SetVideoBlackBorder);
+    }
+
+    public void ToggleSettingsPanel()
+    {
+        if (settingsPanel != null)
+            settingsPanel.SetActive(!settingsPanel.activeSelf);
+    }
+
+    public void SetSettingsPanelVisible(bool visible)
+    {
+        if (settingsPanel != null)
+            settingsPanel.SetActive(visible);
+    }
+
+    public void SetHapticsEnabled(bool isOn)
+    {
+        // Drive the same vibrotactile gate the remote study manager uses, so the
+        // in-VR menu and UnityCommandReceiver stay consistent. (Toggling the whole
+        // component's 'enabled' did not stop the running haptic coroutine.)
+        if (hapticReceiver != null) hapticReceiver.SetVibrotactileEnabled(isOn);
+    }
+
+    public void SetAudioHapticsEnabled(bool isOn)
+    {
+        if (hapticReceiver != null) hapticReceiver.SetAudioHapticsEnabled(isOn);
+    }
+
+    public void SetAvatarVisualsEnabled(bool isOn)
+    {
+        // ON = show the ghost-outline avatar during teleop; OFF = hide it entirely.
+        if (teleopVisuals != null) teleopVisuals.SetShowAvatarDuringTeleop(isOn);
+    }
+
+    public void SetVideoBlackBorder(bool isOn)
+    {
+        // ON = opaque black around the video canvas; OFF = extend the edge pixels to fill the whole
+        // view (the operator's original look — no geometric stretch). Persisted in ZEDFOVFiller.
+        if (zedFovFiller != null) zedFovFiller.SetBlackBorder(isOn);
+    }
+
+    // ── Remote-state sync (driven by UnityCommandReceiver / study manager) ──────
+    // When the study manager toggles a gate over the 'unity_cmds' channel, the
+    // in-VR checkbox must follow so the menu never disagrees with what the manager
+    // shows. SetIsOnWithoutNotify updates the toggle graphic WITHOUT re-firing
+    // onValueChanged (which would loop straight back into SetHapticsEnabled /
+    // SetAudioHapticsEnabled and re-drive the gate redundantly). We set the gate
+    // here too so this one call keeps visual + behaviour consistent.
+
+    public void SyncHapticsToggle(bool isOn)
+    {
+        if (hapticsToggle  != null) hapticsToggle.SetIsOnWithoutNotify(isOn);
+        if (hapticReceiver != null) hapticReceiver.SetVibrotactileEnabled(isOn);
+    }
+
+    public void SyncAudioHapticsToggle(bool isOn)
+    {
+        if (audioHapticsToggle != null) audioHapticsToggle.SetIsOnWithoutNotify(isOn);
+        if (hapticReceiver     != null) hapticReceiver.SetAudioHapticsEnabled(isOn);
+    }
+}
