@@ -83,6 +83,14 @@ The Meta XR Interaction SDK and WebRTC package samples are gitignored. Re-import
 
 If the headset and server are on different networks, use a VPN such as Tailscale or set up port forwarding. The headset needs to reach the signaling port (8080) and the video ports.
 
+### Using the stock `xr-robot-teleop-server` examples
+
+The client is wire-compatible with the public [`xr-robot-teleop-server`](https://pypi.org/project/xr-robot-teleop-server/) package (`pip install xr-robot-teleop-server`) and its examples (e.g. `visualize_body_pose.py`, `record_body_pose.py`, the robosuite/MuJoCo demo). The `body_pose` binary format, the `camera` head-orientation channel and the default `:8080/offer` endpoint are unchanged. A few behaviours differ from the original client, so:
+
+- **Pose only streams after you press Play.** Power connects; Play starts streaming `body_pose` (the original client streamed as soon as it connected). If the server example shows no motion after connecting, press Play.
+- **Server-sent video appears in Webcam Mode.** If your server provides a video track (its `video_track_factory`, e.g. a 360° camera source rendered from the `camera` head orientation), switch to **Webcam Mode** and turn on **Streaming Features > Toggle Video Display**. FPV Mode (the startup scene) does not request video from this server; it uses MediaMTX instead.
+- **Extra channels are harmless.** The client also opens `unity_state`, `unity_cmds`, `haptics`, `motor_stats` and `apriltag_pose`; a stock server just logs "No handler registered for data channel" for any it doesn't use.
+
 ### In-VR menu
 
 | Control | Function |
