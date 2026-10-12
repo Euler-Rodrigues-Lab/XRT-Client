@@ -39,7 +39,7 @@ Developed at Georgia Tech in the Robot Danger Lab (RDL) and the Symbiotic & Augm
 
 ```bash
 git lfs install
-git clone https://github.com/AustinNGraves/XRT-Client.git
+git clone https://github.com/Euler-Rodrigues-Lab/XRT-Client.git
 cd XRT-Client
 git lfs pull
 ```
