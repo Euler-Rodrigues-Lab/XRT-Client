@@ -8,13 +8,12 @@ using UnityEditor.Compilation;
 using UnityEngine;
 
 /// <summary>
-/// Maintains compiler defines for optional proprietary SDKs that are not distributed with
-/// this repository (they must be imported separately):
-///   XRT_BHAPTICS   - bHaptics SDK2 (Assets/Bhaptics)
-///   XRT_SENSEGLOVE - SenseGlove Unity plugin (Assets/SenseGlove)
-/// The defines live in Assets/csc.rsp (gitignored, machine-local) rather than PlayerSettings,
-/// so a fresh clone never inherits them. Integration scripts are wrapped in #if on these
-/// symbols so the project compiles with or without the SDKs. Lives in its own editor-only
+/// Maintains the compiler define for the optional proprietary bHaptics SDK, which is not
+/// distributed with this repository (it must be imported separately):
+///   XRT_BHAPTICS - bHaptics SDK2 (Assets/Bhaptics)
+/// The define lives in Assets/csc.rsp (gitignored, machine-local) rather than PlayerSettings,
+/// so a fresh clone never inherits it. Integration scripts are wrapped in #if on this
+/// symbol so the project compiles with or without the SDK. Lives in its own editor-only
 /// assembly so removing an SDK while the editor is open is handled. If an SDK is removed
 /// while Unity is closed, delete Assets/csc.rsp before reopening the project.
 /// </summary>
@@ -22,10 +21,9 @@ using UnityEngine;
 public static class OptionalSdkDefines
 {
     const string BhapticsDefine = "XRT_BHAPTICS";
-    const string SenseGloveDefine = "XRT_SENSEGLOVE";
     const string RspPath = "Assets/csc.rsp";
 
-    static readonly string[] ManagedDefines = { BhapticsDefine, SenseGloveDefine };
+    static readonly string[] ManagedDefines = { BhapticsDefine };
     static readonly NamedBuildTarget[] LegacyTargets = { NamedBuildTarget.Android, NamedBuildTarget.Standalone };
 
     static OptionalSdkDefines()
@@ -43,10 +41,10 @@ public static class OptionalSdkDefines
     static void RefreshFromMenu()
     {
         if (!Refresh())
-            Debug.Log($"[OptionalSdkDefines] Defines up to date ({BhapticsDefine}={HasBhaptics()}, {SenseGloveDefine}={HasSenseGlove()}).");
+            Debug.Log($"[OptionalSdkDefines] Defines up to date ({BhapticsDefine}={HasBhaptics()}).");
     }
 
-    /// <summary>Syncs csc.rsp with the SDKs on disk. Returns true if anything was changed.</summary>
+    /// <summary>Syncs csc.rsp with the SDK on disk. Returns true if anything was changed.</summary>
     public static bool Refresh()
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode)
@@ -55,7 +53,6 @@ public static class OptionalSdkDefines
         var wanted = new Dictionary<string, bool>
         {
             { BhapticsDefine, HasBhaptics() },
-            { SenseGloveDefine, HasSenseGlove() },
         };
 
         bool changed = RemoveLegacyPlayerSettingsDefines();
@@ -63,7 +60,7 @@ public static class OptionalSdkDefines
         if (UpdateRspFile(wanted))
         {
             changed = true;
-            Debug.Log($"[OptionalSdkDefines] Updated {RspPath}: {BhapticsDefine}={wanted[BhapticsDefine]}, {SenseGloveDefine}={wanted[SenseGloveDefine]}.");
+            Debug.Log($"[OptionalSdkDefines] Updated {RspPath}: {BhapticsDefine}={wanted[BhapticsDefine]}.");
             // Defer AssetDatabase/compilation calls out of InitializeOnLoad / asset postprocessing.
             EditorApplication.delayCall += () =>
             {
@@ -140,7 +137,7 @@ public static class OptionalSdkDefines
         }
 
         if (changed)
-            Debug.Log($"[OptionalSdkDefines] Removed {BhapticsDefine}/{SenseGloveDefine} from PlayerSettings scripting defines (now managed via {RspPath}).");
+            Debug.Log($"[OptionalSdkDefines] Removed {BhapticsDefine} from PlayerSettings scripting defines (now managed via {RspPath}).");
 
         return changed;
     }
@@ -151,12 +148,6 @@ public static class OptionalSdkDefines
             && HasAsset("BhapticsPhysicsGlove.cs", "Assets/Bhaptics/SDK2/Scripts/Core/BhapticsPhysicsGlove.cs");
     }
 
-    static bool HasSenseGlove()
-    {
-        return HasAsset("SG_TrackedHand.cs", "Assets/SenseGlove/Scripts/Tracking/SG_TrackedHand.cs")
-            && HasAsset("SG_HapticGlove.cs", "Assets/SenseGlove/Scripts/Devices/SG_HapticGlove.cs")
-            && HasAsset("SGCoreCs.dll", "Assets/SenseGlove/Plugins/Android/SGCoreCs.dll");
-    }
 
     /// <summary>
     /// True if an asset with exactly this file name exists anywhere under Assets/ (so a moved
@@ -191,12 +182,8 @@ public static class OptionalSdkDefines
             foreach (var p in paths)
             {
                 if (p.StartsWith("Assets/Bhaptics", StringComparison.OrdinalIgnoreCase) ||
-                    p.StartsWith("Assets/SenseGlove", StringComparison.OrdinalIgnoreCase) ||
                     p.EndsWith("BhapticsLibrary.cs", StringComparison.OrdinalIgnoreCase) ||
-                    p.EndsWith("BhapticsPhysicsGlove.cs", StringComparison.OrdinalIgnoreCase) ||
-                    p.EndsWith("SG_TrackedHand.cs", StringComparison.OrdinalIgnoreCase) ||
-                    p.EndsWith("SG_HapticGlove.cs", StringComparison.OrdinalIgnoreCase) ||
-                    p.EndsWith("SGCoreCs.dll", StringComparison.OrdinalIgnoreCase))
+                    p.EndsWith("BhapticsPhysicsGlove.cs", StringComparison.OrdinalIgnoreCase))
                     return true;
             }
             return false;

@@ -88,16 +88,15 @@ Meta XR Core / Interaction / MR Utility Kit SDKs (Oculus SDK License), Meta XR M
 (Unity Companion License), NativeWebSocket (Apache-2.0, `github.com/endel/NativeWebSocket`),
 and Unity first-party packages (Unity Companion License).
 
-## Optional SDKs (NOT redistributed — import them yourself)
+## Optional SDK (NOT redistributed — import it yourself)
 
 | SDK | Why it is not included | How to get it |
 |---|---|---|
 | bHaptics SDK2 for Unity (TactGlove support) | The bHaptics SDK License Agreement does not permit redistribution of its binaries/source outside an application build. | Install "bHaptics Haptic Plugin" from the Unity Asset Store or the bHaptics developer portal into `Assets/Bhaptics/`. |
-| SenseGlove Unity plugin (experimental) | Contains proprietary native binaries (`SGCoreCs.dll`) with unclear redistribution terms. | Download from [Adjuvo/SenseGlove-Unity](https://github.com/Adjuvo/SenseGlove-Unity) into `Assets/SenseGlove/`. |
 
-The editor script `Assets/Editor/OptionalSdkDefines/OptionalSdkDefines.cs` detects these SDKs and
-enables the `XRT_BHAPTICS` / `XRT_SENSEGLOVE` compile symbols automatically. Without them the
-project still compiles and runs; only the corresponding glove integrations are disabled.
+The editor script `Assets/Editor/OptionalSdkDefines/OptionalSdkDefines.cs` detects this SDK and
+enables the `XRT_BHAPTICS` compile symbol automatically. Without it the project still compiles
+and runs; only the bHaptics TactGlove output is disabled (audio haptics still work).
 
 ## Logos
 

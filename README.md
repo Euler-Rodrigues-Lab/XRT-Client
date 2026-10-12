@@ -50,21 +50,20 @@ git lfs pull
 4. Set your own signing keystore under Player Settings > Publishing Settings. Keystores (`*.keystore`, `*.jks`) and APKs are gitignored; never commit them.
 5. Build and run, or build an APK.
 
-### Optional proprietary SDKs
+### Optional proprietary SDK
 
-These SDKs are not in the repository and cannot be redistributed. The project compiles and runs without them; audio haptics still work.
+The bHaptics SDK is not in the repository and cannot be redistributed. The project compiles and runs without it; audio haptics still work.
 
 | SDK | Import into | Source |
 | :--- | :--- | :--- |
 | bHaptics SDK2 | `Assets/Bhaptics/` | Unity Asset Store ("bHaptics Haptic Plugin") or the bHaptics developer portal |
-| SenseGlove Unity plugin (experimental integration) | `Assets/SenseGlove/` | https://github.com/Adjuvo/SenseGlove-Unity |
 
-`Assets/Editor/OptionalSdkDefines/OptionalSdkDefines.cs` detects the SDKs on every editor load and whenever files matching `Bhaptics` or `SenseGlove` are imported, moved, or deleted. It writes `-define:XRT_BHAPTICS` and/or `-define:XRT_SENSEGLOVE` into `Assets/csc.rsp` (gitignored, machine-local) and requests a recompile. To force a re-check, use **Tools > XRT > Refresh Optional SDK Defines**.
+`Assets/Editor/OptionalSdkDefines/OptionalSdkDefines.cs` detects the SDK on every editor load and whenever bHaptics files are imported, moved, or deleted. It writes `-define:XRT_BHAPTICS` into `Assets/csc.rsp` (gitignored, machine-local) and requests a recompile. To force a re-check, use **Tools > XRT > Refresh Optional SDK Defines**.
 
-- bHaptics is detected by `BhapticsLibrary.cs` and `BhapticsPhysicsGlove.cs`; SenseGlove by `SG_TrackedHand.cs`, `SG_HapticGlove.cs`, and `Plugins/Android/SGCoreCs.dll`.
-- Until an SDK is imported, scene components that reference it show as "Missing Script" in the Inspector. This is expected.
+- bHaptics is detected by `BhapticsLibrary.cs` and `BhapticsPhysicsGlove.cs`.
+- Until the SDK is imported, scene components that reference it show as "Missing Script" in the Inspector. This is expected.
 - Unity will not save a prefab that contains a missing script, so editing `Assets/[BB] Interaction Rig.prefab` and the `Assets/Export/` hand prefabs requires the bHaptics SDK to be imported.
-- If you remove an SDK while Unity is closed, delete `Assets/csc.rsp` before reopening the project (otherwise its define is still set and compilation fails).
+- If you remove the SDK while Unity is closed, delete `Assets/csc.rsp` before reopening the project (otherwise its define is still set and compilation fails).
 
 ### Samples not committed
 
@@ -169,7 +168,7 @@ Research code, tested on Quest 3. Issues and pull requests are welcome.
 
 ## License and third-party components
 
-Released under the MIT License (see `LICENSE`). Third-party components and their licenses are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Meta SDK assets are used under the Oculus SDK License; bHaptics and SenseGlove SDKs are not included.
+Released under the MIT License (see `LICENSE`). Third-party components and their licenses are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Meta SDK assets are used under the Oculus SDK License; the bHaptics SDK is not included.
 
 ## Credits
 

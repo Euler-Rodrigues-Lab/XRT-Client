@@ -183,8 +183,6 @@ Assets/Plugins/NuGet.meta
 # Proprietary / non-redistributable third-party SDKs. Import them locally (see README).
 /[Aa]ssets/Bhaptics/
 /[Aa]ssets/Bhaptics.meta
-/[Aa]ssets/SenseGlove/
-/[Aa]ssets/SenseGlove.meta
 
 # Package samples that can be re-imported from the Package Manager (Samples tab)
 /[Aa]ssets/Samples/Meta XR Interaction*SDK/
