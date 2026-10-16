@@ -4,10 +4,21 @@ A Unity (6000.3.11f1) client for VR robot teleoperation on the Meta Quest 3. It 
 
 The client works with any robot-side program that answers its WebRTC offer (`POST http://<host>:8080/offer`) and handles its [data channels](#data-channels). Two ready-made options:
 
-- **Unitree G1 (our setup):** the lab's [`XRT_devices`](https://github.com/Euler-Rodrigues-Lab/XRT_devices) headset receiver with [`g1_teleop`](https://github.com/Euler-Rodrigues-Lab/g1_teleop) and [`geo_kin_core`](https://github.com/Euler-Rodrigues-Lab/geo_kin_core) (SEW-Mimic geometric retargeting). See [Connecting to a Unitree G1](#connecting-to-a-unitree-g1).
+- **Unitree G1 with Inspire hands (our setup):** [`proj_XRT`](https://github.com/Euler-Rodrigues-Lab/proj_XRT), the full XRT application (contact-feedback streaming, operator manager, study tools), built on the lab's [`XRT_devices`](https://github.com/Euler-Rodrigues-Lab/XRT_devices) headset receiver with [`g1_teleop`](https://github.com/Euler-Rodrigues-Lab/g1_teleop) and [`geo_kin_core`](https://github.com/Euler-Rodrigues-Lab/geo_kin_core) (SEW-Mimic geometric retargeting). See [Connecting to a Unitree G1](#connecting-to-a-unitree-g1).
 - **Optional minimal peer:** [`XR-Robot-Teleop-Server`](https://github.com/yunho-c/XR-Robot-Teleop-Server) (`pip install xr-robot-teleop-server`), a small aiortc server with per-channel callbacks. It is handy for visualizing or recording pose without a robot, but it is **not required**.
 
 Developed at Georgia Tech in the Robot Danger Lab (RDL) and the Symbiotic & Augmented Intelligence Laboratory (SAIL).
+
+Project website: <https://xrt-teleop.github.io>
+
+### Related repositories
+
+| Repository | Role |
+| :--- | :--- |
+| [`proj_XRT`](https://github.com/Euler-Rodrigues-Lab/proj_XRT) | XRT application for a Unitree G1 with Inspire tactile hands: operator manager, tactile-to-haptics streaming, synchronized recording and digital-twin replay (the dual-operator study stack) |
+| [`XRT_devices`](https://github.com/Euler-Rodrigues-Lab/XRT_devices) | The WebRTC headset receiver this client connects to; body-pose recording and playback; skeleton conventions |
+| [`g1_teleop`](https://github.com/Euler-Rodrigues-Lab/g1_teleop) | Unitree G1 models, MuJoCo simulation and robot control |
+| [`geo_kin_core`](https://github.com/Euler-Rodrigues-Lab/geo_kin_core) | SEW-Mimic geometric retargeting interface |
 
 ## Features
 
@@ -119,6 +130,12 @@ The public robot-side code for this is [`g1_teleop`](https://github.com/Euler-Ro
 
 ```bash
 python -m g1_teleop.demos.teleop_xr --device xrt --hand inspire --backend auto
+```
+
+For the full application with fingertip contact feedback (the setup used in our dual-operator study), use [`proj_XRT`](https://github.com/Euler-Rodrigues-Lab/proj_XRT); `--dry_run` sends no hardware commands:
+
+```bash
+python -m projects.inspire_hand_teleop.demo_g1_inspire_xr_robot_teleop_full_body_hw --dry_run
 ```
 
 Installation, hardware setup and the available options are documented in those repositories. Check their READMEs for which feedback channels (`haptics`, `motor_stats`, `unity_cmds`) and video paths they currently provide.
