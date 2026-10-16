@@ -2,7 +2,10 @@
 
 A Unity (6000.3.11f1) client for VR robot teleoperation on the Meta Quest 3. It streams the operator's upper-body pose and hand data from the headset to a Python peer over WebRTC data channels, and receives stereo or monocular camera video, fingertip haptics, and motor telemetry back.
 
-The Python peer is [`XR-Robot-Teleop-Server`](https://github.com/yunho-c/XR-Robot-Teleop-Server) (aiortc). It answers the client's WebRTC offer and exposes each data channel to user-defined callbacks. Robot-side applications, such as our Unitree G1 teleoperation stack (not public), are built on top of it.
+The client works with any robot-side program that answers its WebRTC offer (`POST http://<host>:8080/offer`) and handles its [data channels](#data-channels). Two ready-made options:
+
+- **Unitree G1 (our setup):** the lab's [`XRT_devices`](https://github.com/Euler-Rodrigues-Lab/XRT_devices) headset receiver with [`g1_teleop`](https://github.com/Euler-Rodrigues-Lab/g1_teleop) and [`geo_kin_core`](https://github.com/Euler-Rodrigues-Lab/geo_kin_core) (SEW-Mimic geometric retargeting). See [Connecting to a Unitree G1](#connecting-to-a-unitree-g1).
+- **Optional minimal peer:** [`XR-Robot-Teleop-Server`](https://github.com/yunho-c/XR-Robot-Teleop-Server) (`pip install xr-robot-teleop-server`), a small aiortc server with per-channel callbacks. It is handy for visualizing or recording pose without a robot, but it is **not required**.
 
 Developed at Georgia Tech in the Robot Danger Lab (RDL) and the Symbiotic & Augmented Intelligence Laboratory (SAIL).
 
@@ -24,7 +27,7 @@ Developed at Georgia Tech in the Robot Danger Lab (RDL) and the Symbiotic & Augm
 | Unity | 6000.3.11f1, with Android Build Support |
 | Headset | Meta Quest 3 (developer mode enabled) |
 | Git LFS | Required. Run `git lfs install` **before** cloning |
-| Server | [`XR-Robot-Teleop-Server`](https://github.com/yunho-c/XR-Robot-Teleop-Server) on a machine reachable from the headset |
+| Robot-side peer | A program on a machine reachable from the headset that answers `:8080/offer`, e.g. `XRT_devices` + `g1_teleop` for a Unitree G1, or the optional `XR-Robot-Teleop-Server` for quick tests |
 | Video (optional) | A MediaMTX instance for FPV Mode, or a WebSocket-signaled WebRTC video server for Webcam Mode |
 
 ### Hardware compatibility
@@ -75,16 +78,33 @@ The Meta XR Interaction SDK and WebRTC package samples are gitignored. Re-import
    ```bash
    adb install -r <your-build>.apk
    ```
-2. Start the server application built on `XR-Robot-Teleop-Server`. The client POSTs its SDP offer to `http://<server>:8080/offer`.
+2. Start your robot-side program (for a G1, see [Connecting to a Unitree G1](#connecting-to-a-unitree-g1); for a quick test without a robot, the optional `xr-robot-teleop-server` examples below). The client POSTs its SDP offer to `http://<server>:8080/offer`.
 3. In VR, open the **IP Address** panel and enter the server IP. A raw IP is recommended over a hostname for a faster first connect. Server addresses persist in `PlayerPrefs`.
 4. Press **Power** to connect.
 5. Press **Play** to start teleoperation. Press it again to pause.
 
 If the headset and server are on different networks, use a VPN such as Tailscale or set up port forwarding. The headset needs to reach the signaling port (8080) and the video ports.
 
-### Using the stock `xr-robot-teleop-server` examples
+### Connecting to a Unitree G1
 
-The client is wire-compatible with the public [`xr-robot-teleop-server`](https://pypi.org/project/xr-robot-teleop-server/) package (`pip install xr-robot-teleop-server`) and its examples (e.g. `visualize_body_pose.py`, `record_body_pose.py`, the robosuite/MuJoCo demo). The `body_pose` binary format, the `camera` head-orientation channel and the default `:8080/offer` endpoint are unchanged. A few behaviours differ from the original client, so:
+This is how we run the client with a Unitree G1 humanoid (Inspire tactile hands, ZED Mini stereo camera on a neck gimbal):
+
+- **Pose → robot.** The headset streams body and hand pose over Wi-Fi to a laptop on the same LAN, at up to 90 Hz on the unreliable `body_pose` channel. The laptop solves each 7-DoF arm from the operator's shoulder, elbow and wrist with the closed-form SEW-Mimic retargeter at 60 Hz. It sends joint targets to the G1 over Unitree DDS at 500 Hz, finger angles to the Inspire hands at 50 Hz, and head yaw/pitch to the neck gimbal. Only the arms, hands and neck are commanded.
+- **Video → headset.** The ZED Mini feed is H.264-encoded on the laptop (GStreamer/NVENC) and relayed through [MediaMTX](https://github.com/bluenviron/mediamtx). The client plays it in **FPV Mode** from `<laptop>:8889/zed_stereo` (WHEP).
+- **Feedback → headset.** The laptop sends Inspire fingertip contact on `haptics` (rendered as audio haptics and/or bHaptics TactGlove vibration), G1 arm temperatures and torques on `motor_stats`, and UI commands on `unity_cmds`.
+- **Safety.** Pose streams only after **Play**. Taking the headset off pauses teleop (see [Safety](#safety)), and the robot side holds its last pose when pose stops arriving.
+
+The public robot-side code for this is [`g1_teleop`](https://github.com/Euler-Rodrigues-Lab/g1_teleop) (MuJoCo simulation and real-robot control) on top of [`XRT_devices`](https://github.com/Euler-Rodrigues-Lab/XRT_devices) and [`geo_kin_core`](https://github.com/Euler-Rodrigues-Lab/geo_kin_core). Following its README, start the XR demo and enter the laptop's IP (port 8080) in the client's **IP Address** panel:
+
+```bash
+python -m g1_teleop.demos.teleop_xr --device xrt --hand inspire --backend auto
+```
+
+Installation, hardware setup and the available options are documented in those repositories. Check their READMEs for which feedback channels (`haptics`, `motor_stats`, `unity_cmds`) and video paths they currently provide.
+
+### Optional: the minimal `xr-robot-teleop-server`
+
+You don't need this package to use the client. It is a small, general-purpose peer, useful for checking that pose arrives, visualizing it, or recording it without a robot. The client is wire-compatible with the public [`xr-robot-teleop-server`](https://pypi.org/project/xr-robot-teleop-server/) package (`pip install xr-robot-teleop-server`) and its examples (e.g. `visualize_body_pose.py`, `record_body_pose.py`, the robosuite/MuJoCo demo). The `body_pose` binary format, the `camera` head-orientation channel and the default `:8080/offer` endpoint are unchanged. A few behaviours differ from the original client, so:
 
 - **Pose only streams after you press Play.** Power connects; Play starts streaming `body_pose` (the original client streamed as soon as it connected). If the server example shows no motion after connecting, press Play.
 - **Server-sent video appears in Webcam Mode.** If your server provides a video track (its `video_track_factory`, e.g. a 360° camera source rendered from the `camera` head orientation), switch to **Webcam Mode** and turn on **Streaming Features > Toggle Video Display**. FPV Mode (the startup scene) does not request video from this server; it uses MediaMTX instead.
@@ -146,8 +166,8 @@ graph LR
         HAP --> AH[Audio haptics / bHaptics]
     end
 
-    subgraph Server["XR-Robot-Teleop-Server (Python)"]
-        SRV(aiortc peer)
+    subgraph Server["Robot-side peer (Python)"]
+        SRV["WebRTC receiver: XRT_devices,<br/>or optional xr-robot-teleop-server"]
     end
 
     APP[Robot application]
