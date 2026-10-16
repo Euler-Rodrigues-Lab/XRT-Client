@@ -20,15 +20,34 @@ Developed at Georgia Tech in the Robot Danger Lab (RDL) and the Symbiotic & Augm
 - Safety pause: teleop pauses automatically when the headset is removed.
 - In-VR menu ("CloverUI") for connecting, starting teleop, entering the server IP, and settings.
 
+## Quick start: install the prebuilt APK
+
+You don't need Unity to try the client. Each [release](https://github.com/Euler-Rodrigues-Lab/XRT-Client/releases/latest) has a ready-to-install APK for the Quest 3, built from the tagged source with bHaptics TactGlove support included.
+
+1. Download `XRT-Client-v<version>.apk` from the [latest release](https://github.com/Euler-Rodrigues-Lab/XRT-Client/releases/latest).
+2. Enable [developer mode](https://developers.meta.com/horizon/documentation/native/android/mobile-device-setup/) on the headset and connect it to your computer over USB.
+3. Install it with [Meta Quest Developer Hub](https://developers.meta.com/horizon/documentation/unity/ts-mqdh/) (Devices tab, drag and drop the `.apk`) or with `adb`:
+   ```bash
+   adb install -r XRT-Client-v<version>.apk
+   ```
+4. On the headset, open **Library > Unknown Sources > XR Robot Teleop Client**.
+5. Follow [Usage](#usage) from step 2 to connect it to your robot-side program.
+
+The release APK is signed with a development key. If a build of the app signed with a different key is already on the headset, `adb install` fails with `INSTALL_FAILED_UPDATE_INCOMPATIBLE`. Uninstall the old build first (this also clears its saved server addresses):
+
+```bash
+adb uninstall com.GTSafeRoboticsLab.xrteleopclient
+```
+
 ## Requirements
 
 | Item | Notes |
 | :--- | :--- |
-| Unity | 6000.3.11f1, with Android Build Support |
 | Headset | Meta Quest 3 (developer mode enabled) |
-| Git LFS | Required. Run `git lfs install` **before** cloning |
 | Robot-side peer | A program on a machine reachable from the headset that answers `:8080/offer`, e.g. `XRT_devices` + `g1_teleop` for a Unitree G1, or the optional `XR-Robot-Teleop-Server` for quick tests |
 | Video (optional) | A MediaMTX instance for FPV Mode, or a WebSocket-signaled WebRTC video server for Webcam Mode |
+| Unity (building from source only) | 6000.3.11f1, with Android Build Support |
+| Git LFS (building from source only) | Required. Run `git lfs install` **before** cloning |
 
 ### Hardware compatibility
 
@@ -38,7 +57,9 @@ Developed at Georgia Tech in the Robot Danger Lab (RDL) and the Symbiotic & Augm
 | Meta Quest Pro | Untested |
 | Other headsets | Not supported |
 
-## Build
+## Build from source
+
+Only needed if you want to modify the client; otherwise use the [prebuilt APK](#quick-start-install-the-prebuilt-apk).
 
 ```bash
 git lfs install
@@ -55,7 +76,7 @@ git lfs pull
 
 ### Optional proprietary SDK
 
-The bHaptics SDK is not in the repository and cannot be redistributed. The project compiles and runs without it; audio haptics still work.
+The bHaptics SDK is not in the repository and cannot be redistributed as source. The project compiles and runs without it; audio haptics still work. (The prebuilt release APK already includes it.)
 
 | SDK | Import into | Source |
 | :--- | :--- | :--- |
@@ -74,9 +95,9 @@ The Meta XR Interaction SDK and WebRTC package samples are gitignored. Re-import
 
 ## Usage
 
-1. Install the APK on the Quest, either with [Meta Quest Developer Hub](https://developers.meta.com/horizon/documentation/unity/ts-mqdh/) (Devices tab, drag and drop the `.apk`) or:
+1. Install the [prebuilt APK](#quick-start-install-the-prebuilt-apk) or your own build on the Quest, either with [Meta Quest Developer Hub](https://developers.meta.com/horizon/documentation/unity/ts-mqdh/) (Devices tab, drag and drop the `.apk`) or:
    ```bash
-   adb install -r <your-build>.apk
+   adb install -r <apk-file>.apk
    ```
 2. Start your robot-side program (for a G1, see [Connecting to a Unitree G1](#connecting-to-a-unitree-g1); for a quick test without a robot, the optional `xr-robot-teleop-server` examples below). The client POSTs its SDP offer to `http://<server>:8080/offer`.
 3. In VR, open the **IP Address** panel and enter the server IP. A raw IP is recommended over a hostname for a faster first connect. Server addresses persist in `PlayerPrefs`.
@@ -184,11 +205,11 @@ graph LR
 
 ## Status and contributing
 
-Research code, tested on Quest 3. Issues and pull requests are welcome.
+Research code, tested on Quest 3. Issues and pull requests are welcome. Versions and prebuilt APKs are published on the [Releases](https://github.com/Euler-Rodrigues-Lab/XRT-Client/releases) page.
 
 ## License and third-party components
 
-Released under the MIT License (see `LICENSE`). Third-party components and their licenses are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Meta SDK assets are used under the Oculus SDK License; the bHaptics SDK is not included.
+Released under the MIT License (see [LICENSE](LICENSE)). Third-party components and their licenses are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Meta SDK assets are used under the Oculus SDK License. The bHaptics SDK is not included in the source; the prebuilt APK contains it in compiled form under the bHaptics SDK license.
 
 ## Credits
 

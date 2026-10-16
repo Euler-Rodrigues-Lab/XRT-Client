@@ -98,6 +98,13 @@ The editor script `Assets/Editor/OptionalSdkDefines/OptionalSdkDefines.cs` detec
 enables the `XRT_BHAPTICS` compile symbol automatically. Without it the project still compiles
 and runs; only the bHaptics TactGlove output is disabled (audio haptics still work).
 
+## Prebuilt APK (GitHub Releases)
+
+The APK attached to each GitHub release is a compiled application that contains, in addition to
+this project's code, the Unity runtime, the Unity and Meta XR packages listed above, the bundled
+components above, and the bHaptics SDK2. Each remains under its own license; the MIT license
+covers only this project's own code and assets.
+
 ## Logos
 
 The Robot Danger Lab (RDL) and SAIL logos in `Assets/Image Imports/` are the property of their

@@ -19,10 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----------------------------------------------------------------------------
-This license applies to the original source code and assets of this project.
-Third-party components bundled in this repository (for example the Meta XR
-Movement SDK samples under Assets/Samples/, the AprilTag native libraries and
-the In-game Debug Console plugin under Assets/Plugins/) remain under their own
-licenses. See THIRD_PARTY_NOTICES.md.
